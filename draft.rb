@@ -31,10 +31,32 @@ def formatted_reservations(date_str, time_want_str)
 end
 
 FunctionsFramework.http 'index' do |request|
+  require 'google/cloud/firestore'
+  if ENV['CREDENTIALS_JSON']
+    firestore = ::Google::Cloud::Firestore.new(
+      project_id: 'devs-sandbox',
+      credentials: JSON.parse(ENV['CREDENTIALS_JSON']),
+    )
+  else
+    # It's likely asset:precompile. Simply ignore that.
+    # Use emulator
+    ENV['FIRESTORE_EMULATOR_HOST'] = "firestore-emulator:8080"
+    firestore = ::Google::Cloud::Firestore.new(
+      project_id: 'devs-sandbox',
+    )
+  end
+  col = firestore.col('practice-cloud-functions/draft/reservations')
+
   input = JSON.parse request.body.read rescue {}
   date_str = input['date_str'] || '2021-03-22'
   result = formatted_reservations(date_str, '9:30am').join("\n")
-  puts result
+
+  col.add({
+    date_str: date_str,
+    result: result,
+    created_at: Time.now,
+  })
+
   result
 end
 
