@@ -9,6 +9,10 @@ services:
     environment:
       - PORT=8080
     working_dir: /usr/src/app
+  firestore-emulator:
+    build:
+      context: .
+      dockerfile: firestore-emulator.Dockerfile
   yaichi:
     image: mtsmfm/yaichi:1.7.0
     ports:
