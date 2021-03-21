@@ -1,0 +1,11 @@
+version: '3'
+services:
+  hotwire-bbs:
+    container_name: practice-cloud-functions
+    build:
+      context: .
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - PORT=8080
+    working_dir: /usr/src/app
