@@ -12,4 +12,4 @@ COPY . .
 EXPOSE 8080
 
 CMD \
-      bundle exec ruby -e 'p :ok'
+      bundle exec functions-framework-ruby --target hello
