@@ -12,4 +12,4 @@ COPY . .
 EXPOSE 8080
 
 CMD \
-      bundle exec functions-framework-ruby --target hello
+      bundle exec functions-framework-ruby --target index
