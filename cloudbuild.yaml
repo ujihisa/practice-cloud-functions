@@ -8,3 +8,5 @@ steps:
   - --region=us-central1
   - --source=.
   - --trigger-http
+  - --max-instances=1
+  - --entry-point=hello
