@@ -74,8 +74,7 @@ FunctionsFramework.http 'index' do |request|
   end
   col = firestore.col('practice-cloud-functions/draft/reservations')
 
-  input = JSON.parse request.body.read rescue {}
-  date_str = input['date_str'] || '2021-03-22'
+  date_str = request.params['date_str'] || '2021-03-22'
 
   # Simply skip if it's the past
   if Date.parse(date_str) < Date.today
