@@ -36,10 +36,12 @@ def formatted_reservations(date_str, time_notify_str, notify_min_qty, time_list_
     if notify_quantities.empty?
       # No need to notify
     else
+      message_body =
+        notify_quantities.map {|k, v| "#{k} #{v}" }.join("\n").inspect
       Pushover::Message.new(
         token: token,
         user: ENV['PUSHOVER_USER_TOKEN'],
-        message: "#{date_str}\n#{notify_quantities.join("\n").inspect}"
+        message: "#{date_str}\n#{message_body}"
       ).push
     end
   else
