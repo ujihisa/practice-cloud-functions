@@ -5,7 +5,7 @@ require 'json'
 require 'google/cloud/firestore'
 require 'pushover'
 
-def formatted_reservations(date_str, time_notify_str, notify_min_qty, time_list_str)
+def formatted_reservations(target_date_str, time_notify_str, notify_min_qty, time_list_str)
   require 'net/http'
   require 'json'
   require 'time'
@@ -19,8 +19,8 @@ def formatted_reservations(date_str, time_notify_str, notify_min_qty, time_list_
     'TRAMTIMETRAM-UPTUT-E1' => '11:00am',
   }
 
-  date = Date.parse(date_str)
-  hash = JSON.parse(Net::HTTP.get(URI.parse("https://www.grousemountain.com/products/894/max_available?date=#{date_str}")))
+  date = Date.parse(target_date_str)
+  hash = JSON.parse(Net::HTTP.get(URI.parse("https://www.grousemountain.com/products/894/max_available?date=#{target_date_str}")))
 
   quantities_by_time =
     table.to_h {|k, v|
@@ -41,7 +41,7 @@ def formatted_reservations(date_str, time_notify_str, notify_min_qty, time_list_
       Pushover::Message.new(
         token: token,
         user: ENV['PUSHOVER_USER_TOKEN'],
-        message: "#{date_str}\n#{message_body}"
+        message: "#{target_date_str}\n#{message_body}"
       ).push
     end
   else
@@ -74,22 +74,22 @@ FunctionsFramework.http 'index' do |request|
   end
   col = firestore.col('practice-cloud-functions/draft/reservations')
 
-  date_str = request.params['date_str'] || '2021-03-22'
+  target_date_str = request.params['target_date_str'] || '2021-03-23'
 
   # Simply skip if it's the past
-  if Date.parse(date_str) < Date.today
-    next "#{date_str} is older than today(#{Date.today}). Skipping."
+  if Date.parse(target_date_str) < Date.today
+    next "#{target_date_str} is older than today(#{Date.today}). Skipping."
   end
 
-  result = formatted_reservations(date_str, '8:30am', 2, '9:30am').join("\n")
+  result = formatted_reservations(target_date_str, '8:30am', 2, '9:30am')
 
   col.add({
-    date_str: date_str,
+    target_date_str: target_date_str,
     result: result,
     created_at: Time.now,
   })
 
-  result
+  result.join("\n")
 end
 
 FunctionsFramework.http 'test' do |request|
