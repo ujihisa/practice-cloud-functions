@@ -5,7 +5,8 @@ require 'json'
 require 'google/cloud/firestore'
 require 'pushover'
 
-def formatted_reservations(target_date_str, time_notify_str, notify_min_qty, time_list_str)
+# TODO Refactor
+def formatted_reservations(target_date_str, time_notify_str, notify_min_qty, time_list_str, notify_p)
   require 'net/http'
   require 'json'
   require 'time'
@@ -38,11 +39,13 @@ def formatted_reservations(target_date_str, time_notify_str, notify_min_qty, tim
     else
       message_body =
         notify_quantities.map {|k, v| "#{k} #{v}" }.join("\n").inspect
-      Pushover::Message.new(
-        token: token,
-        user: ENV['PUSHOVER_USER_TOKEN'],
-        message: "#{target_date_str}\n#{message_body}"
-      ).push
+      if notify_p
+        Pushover::Message.new(
+          token: token,
+          user: ENV['PUSHOVER_USER_TOKEN'],
+          message: "#{target_date_str}\n#{message_body}"
+        ).push
+      end
     end
   else
     warn 'Missing PUSHOVER_DEVICE_TOKEN/PUSHOVER_USER_TOKEN'
@@ -75,13 +78,14 @@ FunctionsFramework.http 'index' do |request|
   col = firestore.col('practice-cloud-functions/draft/reservations')
 
   target_date_str = request.params['target_date_str'] || '2021-03-23'
+  notify_p = request.params['notify'] == '1'
 
   # Simply skip if it's the past
   if Date.parse(target_date_str) < Date.today
     next "#{target_date_str} is older than today(#{Date.today}). Skipping."
   end
 
-  result = formatted_reservations(target_date_str, '8:30am', 1, '9:30am')
+  result = formatted_reservations(target_date_str, '8:30am', 1, '9:30am', notify_p)
 
   col.add({
     target_date_str: target_date_str,
