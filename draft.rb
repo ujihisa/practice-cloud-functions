@@ -29,7 +29,7 @@ def formatted_reservations(target_date_str, time_notify_str, notify_min_qty, tim
 
   notify_quantities =
     quantities_by_time.select {|k, v|
-      Time.parse(k) <= Time.parse(time_list_str) &&
+      Time.parse(k) <= Time.parse(time_notify_str) &&
         notify_min_qty <= v
     }
   if token = ENV['PUSHOVER_DEVICE_TOKEN']
@@ -81,7 +81,7 @@ FunctionsFramework.http 'index' do |request|
     next "#{target_date_str} is older than today(#{Date.today}). Skipping."
   end
 
-  result = formatted_reservations(target_date_str, '8:30am', 2, '9:30am')
+  result = formatted_reservations(target_date_str, '8:30am', 1, '9:30am')
 
   col.add({
     target_date_str: target_date_str,
