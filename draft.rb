@@ -29,10 +29,14 @@ def formatted_reservations(target_date_str, time_notify_str, notify_min_qty, tim
     }
 
   notify_quantities =
-    quantities_by_time.select {|k, v|
-      Time.parse(k) <= Time.parse(time_notify_str) &&
-        notify_min_qty <= v
-    }
+    if Date.today == date
+      [] # Don't notify on the same day
+    else
+      quantities_by_time.select {|k, v|
+        Time.parse(k) <= Time.parse(time_notify_str) &&
+          notify_min_qty <= v
+      }
+    end
   if token = ENV['PUSHOVER_DEVICE_TOKEN']
     if notify_quantities.empty?
       # No need to notify
@@ -75,7 +79,6 @@ FunctionsFramework.http 'index' do |request|
       project_id: 'devs-sandbox',
     )
   end
-  col = firestore.col('practice-cloud-functions/draft/reservations')
 
   target_date_str = request.params['target_date_str'] || '2021-03-23'
   notify_p = request.params['notify'] == '1'
@@ -87,6 +90,7 @@ FunctionsFramework.http 'index' do |request|
 
   result = formatted_reservations(target_date_str, '8:30am', 1, '9:30am', notify_p)
 
+  col = firestore.col('practice-cloud-functions/draft/reservations')
   col.add({
     target_date_str: target_date_str,
     result: result,
