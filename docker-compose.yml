@@ -1,6 +1,6 @@
 version: '3'
 services:
-  hotwire-bbs:
+  practice-cloud-functions:
     container_name: practice-cloud-functions
     build:
       context: .
